@@ -10,5 +10,18 @@ namespace AlexTouch.Greystripe
 		IPadLeaderboard,		// 728x90
 		IPadWideSkyscraper		// 160x600	
 	}
+
+	public enum GSAdError
+	{
+		NoError = 0,
+		NoNetwork,
+		NoAd,
+		Timeout,
+		ServerError,
+		InvalidApplicationIdentifier,
+		AdExpired,
+		FetchLimitExceeded,
+		Unknown
+	}
 }
 

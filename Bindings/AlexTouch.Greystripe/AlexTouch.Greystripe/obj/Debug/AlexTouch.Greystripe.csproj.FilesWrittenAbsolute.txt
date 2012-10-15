@@ -1,4 +1,0 @@
-/Users/Alex/Projects/AlexTouch.Greystripe/AlexTouch.Greystripe/bin/Debug/AlexTouch.Greystripe.dll.mdb
-/Users/Alex/Projects/AlexTouch.Greystripe/AlexTouch.Greystripe/bin/Debug/AlexTouch.Greystripe.dll
-/Users/Alex/Projects/AlexTouch.Greystripe/AlexTouch.Greystripe/obj/Debug/AlexTouch.Greystripe.dll
-/Users/Alex/Projects/AlexTouch.Greystripe/AlexTouch.Greystripe/obj/Debug/AlexTouch.Greystripe.dll.mdb

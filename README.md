@@ -7,7 +7,7 @@ This is a MonoTouch Binding for Greystripe library, you just need to add the Ale
 
 Please go to https://developer.greystripe.com/ for more information on how to use this library
 
-This currently binds Version 3.2.0 of Greystripe SDK
+This currently binds Version 4.0 of Greystripe SDK
 
 Thanks To:
 ==========

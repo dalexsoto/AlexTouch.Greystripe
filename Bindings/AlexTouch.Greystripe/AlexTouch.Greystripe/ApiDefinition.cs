@@ -7,138 +7,125 @@ using MonoTouch.UIKit;
 
 namespace AlexTouch.Greystripe
 {
-	// The first step to creating a binding is to add your native library ("libNativeLibrary.a")
-	// to the project by right-clicking (or Control-clicking) the folder containing this source
-	// file and clicking "Add files..." and then simply select the native library (or libraries)
-	// that you want to bind.
-	//
-	// When you do that, you'll notice that MonoDevelop generates a code-behind file for each
-	// native library which will contain a [LinkWith] attribute. MonoDevelop auto-detects the
-	// architectures that the native library supports and fills in that information for you,
-	// however, it cannot auto-detect any Frameworks or other system libraries that the
-	// native library may depend on, so you'll need to fill in that information yourself.
-	//
-	// Once you've done that, you're ready to move on to binding the API...
-	//
-	//
-	// Here is where you'd define your API definition for the native Objective-C library.
-	//
-	// For example, to bind the following Objective-C class:
-	//
-	//     @interface Widget : NSObject {
-	//     }
-	//
-	// The C# binding would look like this:
-	//
-	//     [BaseType (typeof (NSObject))]
-	//     interface Widget {
-	//     }
-	//
-	// To bind Objective-C properties, such as:
-	//
-	//     @property (nonatomic, readwrite, assign) CGPoint center;
-	//
-	// You would add a property definition in the C# interface like so:
-	//
-	//     [Export ("center")]
-	//     PointF Center { get; set; }
-	//
-	// To bind an Objective-C method, such as:
-	//
-	//     -(void) doSomething:(NSObject *)object atIndex:(NSInteger)index;
-	//
-	// You would add a method definition to the C# interface like so:
-	//
-	//     [Export ("doSomething:atIndex:")]
-	//     void DoSomething (NSObject object, int index);
-	//
-	// Objective-C "constructors" such as:
-	//
-	//     -(id)initWithElmo:(ElmoMuppet *)elmo;
-	//
-	// Can be bound as:
-	//
-	//     [Export ("initWithElmo:")]
-	//     IntPtr Constructor (ElmoMuppet elmo);
-	//
-	// For more information, see http://docs.xamarin.com/ios/advanced_topics/binding_objective-c_types
-	//
-
-	[BaseType (typeof (UIView))]
-    interface GSAdView
-	{
-		[Static, Export ("adViewForSlotNamed:delegate:")]
-	    GSAdView AdViewForSlotNamed (string name, GreystripeDelegate adDelegate);
-	    //NSObject AdViewForSlotNamed (string name, GreystripeDelegate adDelegate);
-		
-		[Static, Export ("adViewForSlotNamed:delegate:refreshInterval:")]
-	    GSAdView AdViewForSlotNamed (string name, GreystripeDelegate adDelegate, double interval);
-	    //NSObject AdViewForSlotNamed (string name, GreystripeDelegate adDelegate, double interval);
-		
-		[Export ("refresh")]
-		void Refresh();
-		
-		[Static, Field ("kGSMinimumRefreshInterval", "__Internal")]
-    	double MinimumRefreshInterval { get; }
-	}
-	
 	[BaseType (typeof (NSObject))]
 	[Model]
-	interface GreystripeDelegate 
+	interface GSAd 
 	{
-		[Export ("greystripeAdReadyForSlotNamed:")]
-		void GreystripeAdReadyForSlotNamed (string name);
+		[Wrap ("WeakDelegate")]
+		GSAdDelegate Delegate { get; set; }
 		
-		[Export ("greystripeFullScreenDisplayWillOpen")]
-		void GreystripeFullScreenDisplayWillOpen ();
-		
-		[Export ("greystripeFullScreenDisplayWillClose")]
-		void GreystripeFullScreenDisplayWillClose ();
-		
-		[Export ("greystripeDidReceiveMemoryWarning")]
-		void GreystripeDidReceiveMemoryWarning ();
+		[Export ("delegate", ArgumentSemantic.Assign)][NullAllowed]
+		NSObject WeakDelegate { get; set; }
+
+		[Export ("isAdReady")]
+		bool IsAdReady ();
+
+		[Export ("fetch")]
+		void Fetch ();
 	}
-	
+
 	[BaseType (typeof (NSObject))]
-    interface GSAdSlotDescription
+	[Model]
+	interface GSAdDelegate 
 	{
-		[Export ("size")]
-		GSAdSize Size { get; }
-		
-		[Export ("name")]
-		string Name { get; }
-		
-		[Static, Export ("descriptionWithSize:name:")]
-	    GSAdSlotDescription DescriptionWithSizeName (GSAdSize size, string name);
-	    //NSObject DescriptionWithSizeName (GSAdSize size, string name);
-		
-		[Export ("initWithSize:name:")]
-	    IntPtr Constructor (GSAdSize size, string name);
+		[Export ("greystripeBannerDisplayViewController")]
+		UIViewController BannerDisplayViewController ();
+
+		[Export ("greystripeGUID")]
+		string GreystripeGUID ();
+
+		[Export ("greystripeBannerAutoload")]
+		bool BannerAutoload ();
+
+		[Export ("greystripeAdFetchSucceeded:")]
+		void AdFetchSucceeded (GSAd ad);
+
+		[Export ("greystripeAdFetchFailed:withError:")]
+		void AdFetchFailed (GSAd ad, GSAdError error);
+
+		[Export ("greystripeAdClickedThrough:")]
+		void AdClickedThrough (GSAd ad);
+
+		[Export ("greystripeWillPresentModalViewController")]
+		void WillPresentModalViewController ();
+
+		[Export ("greystripeWillDismissModalViewController")]
+		void WillDismissModalViewController ();
+
+		[Export ("greystripeDidDismissModalViewController")]
+		void DidDismissModalViewController ();
 	}
-	
+
+	[BaseType (typeof (UIView))]
+	interface GSAdView
+	{
+
+	}
+
+	[BaseType (typeof (GSAdView))]
+	interface GSBannerAdView : GSAd
+	{
+		[Export ("initWithDelegate:")]
+		IntPtr Constructor (GSAdDelegate aDelegate);
+
+		[Export ("initWithDelegate:GUID:")]
+		IntPtr Constructor (GSAdDelegate aDelegate, string guid);
+
+		[Export ("initWithDelegate:GUID:autoload:")]
+		IntPtr Constructor (GSAdDelegate aDelegate, string guid, bool autoload);
+	}
+
 	[BaseType (typeof (NSObject))]
-    interface GSAdEngine
-	{		
-		[Static, Export ("startupWithAppID:adSlotDescriptions:")]
-	    void StartupWithAppIDAdSlotDescriptions (string appID, GSAdSlotDescription [] descriptions);
+	interface GSConstants
+	{
+		[Field ("kGSSDKVersion", "__Internal")]
+		NSString GSSDKVersion { get; }
+
+		[Export ("hashedDeviceId")] [Static]
+		string HashedDeviceId { get; }
+
+		[Export ("setGUID:")] [Static]
+		void SetGUID (string guid);
+	}
+
+	[BaseType (typeof (NSObject))]
+	interface GSAdModel : GSAd
+	{
 		
-		[Static, Export ("displayFullScreenAdForSlotNamed:")]
-	    bool DisplayFullScreenAdForSlotNamed (string name);
+	}
+
+	[BaseType (typeof (GSAdModel))]
+	interface GSFullscreenAd
+	{
+		[Export ("initWithDelegate:")]
+		IntPtr Constructor (GSAdDelegate aDelegate);
 		
-		[Static, Export ("setFullScreenDelegate:forSlotNamed:")]
-	    void SetFullScreenDelegateForSlotNamed (GreystripeDelegate adDelegate, string name);
-		
-		[Static, Export ("isAdReadyForSlotNamed:")]
-	    bool IsAdReadyForSlotNamed (string name);
-		
-		[Static, Export ("isNextAdDownloadedForSlotNamed:")]
-	    bool IsNextAdDownloadedForSlotNamed (string name);
-		
-		[Static, Export ("version")]
-		string Version { get; }
-		
-		[Static, Export ("hashedDeviceIdentifier")]
-		string HashedDeviceIdentifier { get; }
+		[Export ("initWithDelegate:GUID:")]
+		IntPtr Constructor (GSAdDelegate aDelegate, string guid);
+
+		[Export ("displayFromViewController:")]
+		bool DisplayFromViewController (UIViewController viewController);
+	}
+
+	[BaseType (typeof (GSBannerAdView))]
+	interface GSLeaderboardAdView
+	{
+		[Field ("kGSLeaderboardParameter", "__Internal")]
+		NSString LeaderboardParameter { get; }
+	}
+
+	[BaseType (typeof (GSBannerAdView))]
+	interface GSMediumRectangleAdView
+	{
+		[Field ("kGSMediumRectangleParameter", "__Internal")]
+		NSString MediumRectangleParameter { get; }
+	}
+
+	[BaseType (typeof (GSBannerAdView))]
+	interface GSMobileBannerAdView
+	{
+		[Field ("kGSMobileBannerParameter", "__Internal")]
+		NSString MobileBannerParameter { get; }
 	}
 }
 
